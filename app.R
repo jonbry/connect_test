@@ -5,7 +5,7 @@ library(duckdb)
 
 source("R/enter_data_modal.R")
 
-con <- dbConnect(duckdb(), dbdir = "data/app_data.duckdb")
+con <- dbConnect(duckdb(), dbdir = ":memory:")
 
 dbExecute(con, "
   CREATE TABLE IF NOT EXISTS form_data (
@@ -15,6 +15,17 @@ dbExecute(con, "
     submitted_at TIMESTAMP
   )
 ")
+
+table <- tibble::tibble(
+  field1 = c("1", "2"),
+  field2 = c("1", "2"),
+  field3 = c("val1", "val2"),
+  submitted_at = Sys.time()
+)
+
+
+dbWriteTable(con, "form_data", table,
+          overwrite = TRUE)
 
 ui <- page_fluid(
   theme = bs_theme(version = 5),
