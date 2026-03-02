@@ -5,7 +5,6 @@ library(duckdb)
 
 source("R/enter_data_modal.R")
 
-# Connect to DuckDB (creates the file if it doesn't exist)
 con <- dbConnect(duckdb(), dbdir = "data/app_data.duckdb")
 
 dbExecute(con, "
@@ -19,13 +18,25 @@ dbExecute(con, "
 
 ui <- page_fluid(
   theme = bs_theme(version = 5),
-  enterDataModalUI("enter_data")
+  enterDataModalUI("enter_data"),
+  tableOutput("data_table")
 )
 
 server <- function(input, output, session) {
+  # Trigger to refresh table after each submission
+  refresh <- reactiveVal(0)
+
   form_data <- enterDataModalServer("enter_data", db_con = con)
 
-  # Close DB connection cleanly when session ends
+  observeEvent(form_data(), {
+    refresh(refresh() + 1)
+  })
+
+  output$data_table <- renderTable({
+    refresh()
+    dbReadTable(con, "form_data")
+  })
+
   onStop(function() {
     dbDisconnect(con, shutdown = TRUE)
   })
