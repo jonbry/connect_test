@@ -2,6 +2,7 @@ library(shiny)
 library(bslib)
 library(DBI)
 library(duckdb)
+library(tibble)
 
 source("R/enter_data_modal.R")
 
